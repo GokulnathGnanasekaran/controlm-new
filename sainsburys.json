@@ -1,0 +1,19 @@
+{
+  "schema-version": "1.0.0",
+  "name": "js-controlm-services",
+  "description": "JS AWS Cloud Control-M Infrastructure repo",
+  "maintainers": [
+    {
+      "type": "TEAM",
+      "name": "Cloud Enablement",
+      "email": "cloudenablement@sainsburys.co.uk"
+    }
+  ],
+  "owners": [
+    {
+      "type": "PRODUCT_MANAGER",
+      "name":"Ben Sagar",
+      "email":"ben.sagar@sainsburys.co.uk"
+    }
+  ]
+}

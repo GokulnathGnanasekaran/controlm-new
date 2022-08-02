@@ -1,0 +1,17 @@
+# IDE files
+.idea
+
+#  Local .terraform directories
+**/.terraform/*
+builds/
+.pytest_cache
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# .tfvars files
+*.tfvars
+*.swp
+**/*.ignore
+*.zip

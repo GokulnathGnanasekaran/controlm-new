@@ -1,0 +1,73 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Pre-Commit
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push request events but only for the master branch
+  push:
+    branches-ignore: [ master, main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    name: Pre-Commit
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Pre-Commit Setup
+        uses: actions/setup-python@v2
+
+      - name: Install dependencies and prepare tests
+        run: |
+          set -x
+          python -m pip install --upgrade pip
+          python -m pip install gitpython
+          curl -L "$(curl -s https://api.github.com/repos/terraform-linters/tflint/releases/latest | grep -o -E "https://.+?_linux_amd64.zip")" > tflint.zip && unzip tflint.zip && rm tflint.zip && sudo mv tflint /usr/bin/
+
+      - name: Remove .terraform directory
+        shell: bash
+        run: |
+          set -x
+          find terraform/environment/prod/ -type d -name ".terraform" -print0 | xargs rm -rf
+          find terraform/environment/dev/ -type d -name ".terraform" -print0 | xargs rm -rf
+
+      - name: Terraform security scan
+        uses: triat/terraform-security-scan@v3.0.0
+        with:
+          tfsec_actions_comment: false
+          tfsec_actions_working_dir: terraform/environment/dev
+          tfsec_exclude: "AWS002,AWS009,AWS015,AWS016,AWS023,AWS078,AWS079,AWS086,AWS092,AWS093,AWS098,AWS099"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      #- name: checkov_pipeline
+      #  uses: bridgecrewio/checkov-action@master
+      #  with:
+      #    directory: pipeline/modules/
+      #    skip_check: CKV_AWS_7,CKV_AWS_18,CKV_AWS_26,CKV_AWS_27,CKV_AWS_28,CKV_AWS_33,CKV_AWS_50,CKV_AWS_51,CKV_AWS_52
+      #    framework: terraform
+      #    quiet: true
+      #    soft_fail: true
+#
+      #- name: checkov_terraform
+      #  uses: bridgecrewio/checkov-action@master
+      #  with:
+      #    directory: terraform/modules/
+      #    skip_check: CKV_AWS_7,CKV_AWS_18,CKV_AWS_26,CKV_AWS_27,CKV_AWS_28,CKV_AWS_33,CKV_AWS_50,CKV_AWS_51,CKV_AWS_52
+      #    framework: terraform
+      #    quiet: true
+      #    soft_fail: true
+
+      - name: Pre-Commit Scan
+        uses: pre-commit/action@v2.0.0
